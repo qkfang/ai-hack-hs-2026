@@ -1,0 +1,77 @@
+@page
+@model api.Pages.Weather.IndexModel
+@{
+    ViewData["Title"] = "Weather";
+}
+
+<h1 class="mb-4">🌍 Current Weather Conditions</h1>
+
+<div class="row mb-4">
+    <div class="col-md-6">
+        <form method="get" class="d-flex gap-2">
+            <input type="text" name="city" class="form-control" placeholder="Search by city..." value="@Model.SearchCity" />
+            <button type="submit" class="btn btn-primary">Search</button>
+            @if (!string.IsNullOrEmpty(Model.SearchCity))
+            {
+                <a asp-page="/Weather/Index" class="btn btn-outline-secondary">Clear</a>
+            }
+        </form>
+    </div>
+</div>
+
+@if (!Model.Records.Any())
+{
+    <div class="alert alert-info">No weather records found@(string.IsNullOrEmpty(Model.SearchCity) ? "." : $" for '{Model.SearchCity}'.")</div>
+}
+else
+{
+    <div class="row g-4">
+        @foreach (var r in Model.Records)
+        {
+            var icon = r.Condition switch
+            {
+                var c when c.Contains("Sunny") || c.Contains("Clear") => "☀️",
+                var c when c.Contains("Rain") => "🌧️",
+                var c when c.Contains("Cloud") => "☁️",
+                var c when c.Contains("Snow") => "❄️",
+                var c when c.Contains("Storm") => "⛈️",
+                var c when c.Contains("Wind") => "💨",
+                _ => "🌤️"
+            };
+            var tempClass = r.TemperatureCelsius >= 30 ? "text-danger" : r.TemperatureCelsius <= 5 ? "text-primary" : "text-success";
+
+            <div class="col-md-4 col-lg-3">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-body text-center">
+                        <div style="font-size:3rem">@icon</div>
+                        <h5 class="card-title mt-2">@r.City</h5>
+                        <p class="text-muted mb-1">@r.Condition</p>
+                        <p class="display-6 @tempClass fw-bold mb-1">@r.TemperatureCelsius°C</p>
+                        <p class="text-muted small">@r.TemperatureFahrenheit°F</p>
+                        <hr />
+                        <div class="row text-start small">
+                            <div class="col-6">💧 Humidity</div>
+                            <div class="col-6 text-end fw-semibold">@r.Humidity%</div>
+                            <div class="col-6">💨 Wind</div>
+                            <div class="col-6 text-end fw-semibold">@r.WindSpeedKmh km/h</div>
+                            <div class="col-12 text-muted mt-1" style="font-size:.75rem">
+                                Updated: @r.RecordedAt.ToString("MMM dd, HH:mm") UTC
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
+
+<div class="mt-5 p-4 bg-light rounded">
+    <h5>🔌 Use the API</h5>
+    <p class="text-muted mb-2">Access weather data programmatically:</p>
+    <div class="d-flex gap-2 flex-wrap">
+        <a href="/swagger" class="btn btn-sm btn-outline-primary" target="_blank">Swagger UI</a>
+        <a href="/api/weather" class="btn btn-sm btn-outline-secondary" target="_blank">GET /api/weather</a>
+        <a href="/api/weather/summary" class="btn btn-sm btn-outline-info" target="_blank">GET /api/weather/summary</a>
+        <a href="/mcp" class="btn btn-sm btn-outline-success" target="_blank">MCP Endpoint</a>
+    </div>
+</div>

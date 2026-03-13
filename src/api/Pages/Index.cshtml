@@ -1,0 +1,52 @@
+﻿@page
+@model IndexModel
+@{
+    ViewData["Title"] = "Home page";
+}
+
+<div class="text-center py-5">
+    <div style="font-size:5rem">🌤️</div>
+    <h1 class="display-4 fw-bold">Weather Info API</h1>
+    <p class="lead text-muted">A real-time weather data service with REST API, MCP server, and admin portal.</p>
+    <div class="d-flex justify-content-center gap-3 flex-wrap mt-4">
+        <a asp-page="/Weather/Index" class="btn btn-primary btn-lg">🌍 View Weather</a>
+        <a href="/swagger" class="btn btn-outline-primary btn-lg" target="_blank">📄 Swagger API</a>
+        <a href="/mcp" class="btn btn-outline-success btn-lg" target="_blank">🤖 MCP Endpoint</a>
+        <a asp-page="/Admin/Index" class="btn btn-outline-secondary btn-lg">🔐 Admin Portal</a>
+    </div>
+</div>
+
+<hr class="my-5" />
+
+<div class="row g-4">
+    <div class="col-md-4">
+        <div class="card h-100 border-0 shadow-sm">
+            <div class="card-body text-center p-4">
+                <div style="font-size:2.5rem">🌐</div>
+                <h5 class="mt-3">REST API</h5>
+                <p class="text-muted">Full CRUD weather API with JSON responses. Explore via Swagger UI.</p>
+                <a href="/swagger" class="btn btn-sm btn-primary" target="_blank">Open Swagger</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card h-100 border-0 shadow-sm">
+            <div class="card-body text-center p-4">
+                <div style="font-size:2.5rem">🤖</div>
+                <h5 class="mt-3">MCP Server</h5>
+                <p class="text-muted">Model Context Protocol server exposes weather tools for AI assistants.</p>
+                <a href="/mcp" class="btn btn-sm btn-success" target="_blank">MCP Endpoint</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card h-100 border-0 shadow-sm">
+            <div class="card-body text-center p-4">
+                <div style="font-size:2.5rem">🗄️</div>
+                <h5 class="mt-3">In-Memory DB</h5>
+                <p class="text-muted">Data is stored in an EF Core in-memory database, seeded on startup.</p>
+                <a href="/api/weather" class="btn btn-sm btn-outline-secondary" target="_blank">View Data</a>
+            </div>
+        </div>
+    </div>
+</div>

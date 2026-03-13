@@ -1,0 +1,46 @@
+@page
+@model api.Pages.Admin.LoginModel
+@{
+    ViewData["Title"] = "Admin Login";
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin Login - Weather API</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <style>
+        body { background: #1a1a2e; display: flex; align-items: center; justify-content: center; min-height: 100vh; }
+        .login-card { background: #16213e; border: 1px solid #0f3460; border-radius: 12px; padding: 2.5rem; width: 100%; max-width: 400px; }
+        .login-card h2 { color: #e94560; margin-bottom: 1.5rem; }
+        .form-control { background: #0f3460; border-color: #1a4a8a; color: #fff; }
+        .form-control:focus { background: #0f3460; border-color: #e94560; color: #fff; box-shadow: 0 0 0 0.2rem rgba(233,69,96,.25); }
+        .form-label { color: #a8b2d8; }
+        .btn-login { background: #e94560; border: none; width: 100%; padding: 0.75rem; font-size: 1rem; }
+        .btn-login:hover { background: #c73652; }
+        .alert-danger { background: rgba(233,69,96,.2); border-color: #e94560; color: #e94560; }
+    </style>
+</head>
+<body>
+    <div class="login-card">
+        <h2 class="text-center">🔐 Admin Portal</h2>
+        <p class="text-center text-muted mb-4">Weather API Management</p>
+        @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+        {
+            <div class="alert alert-danger">@Model.ErrorMessage</div>
+        }
+        <form method="post">
+            <div class="mb-3">
+                <label class="form-label" for="password">Password</label>
+                <input type="password" class="form-control" id="password" name="password" placeholder="Enter admin password" required autofocus />
+            </div>
+            <button type="submit" class="btn btn-login btn-primary">Sign In</button>
+        </form>
+        <div class="text-center mt-3">
+            <a href="/" class="text-muted small">← Back to site</a>
+        </div>
+    </div>
+</body>
+</html>

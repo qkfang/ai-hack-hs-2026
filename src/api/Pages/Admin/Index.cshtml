@@ -1,0 +1,126 @@
+@page
+@model api.Pages.Admin.IndexModel
+@{
+    ViewData["Title"] = "Admin Portal";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h2">🌤️ Weather Admin Portal</h1>
+    <a asp-page="/Admin/Logout" class="btn btn-outline-danger btn-sm">Logout</a>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card text-white bg-primary">
+            <div class="card-body">
+                <h5 class="card-title">Total Cities</h5>
+                <p class="card-text display-6">@Model.Records.Count</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-success">
+            <div class="card-body">
+                <h5 class="card-title">Avg Temperature</h5>
+                <p class="card-text display-6">@Model.AverageTemp°C</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-danger">
+            <div class="card-body">
+                <h5 class="card-title">Hottest</h5>
+                <p class="card-text display-6">@Model.HottestCity</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-info">
+            <div class="card-body">
+                <h5 class="card-title">Coldest</h5>
+                <p class="card-text display-6">@Model.ColdestCity</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">Add New Weather Record</h5>
+    </div>
+    <div class="card-body">
+        <form method="post" asp-page-handler="Add">
+            <div class="row g-3">
+                <div class="col-md-2">
+                    <input type="text" class="form-control" name="city" placeholder="City" required />
+                </div>
+                <div class="col-md-2">
+                    <input type="text" class="form-control" name="condition" placeholder="Condition" required />
+                </div>
+                <div class="col-md-2">
+                    <input type="number" step="0.1" class="form-control" name="tempC" placeholder="Temp °C" required />
+                </div>
+                <div class="col-md-2">
+                    <input type="number" step="0.1" class="form-control" name="humidity" placeholder="Humidity %" required />
+                </div>
+                <div class="col-md-2">
+                    <input type="number" step="0.1" class="form-control" name="windKmh" placeholder="Wind km/h" required />
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary w-100">Add Record</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0">All Weather Records</h5>
+    </div>
+    <div class="card-body p-0">
+        <table class="table table-hover mb-0">
+            <thead class="table-dark">
+                <tr>
+                    <th>ID</th>
+                    <th>City</th>
+                    <th>Condition</th>
+                    <th>Temp (°C)</th>
+                    <th>Temp (°F)</th>
+                    <th>Humidity %</th>
+                    <th>Wind km/h</th>
+                    <th>Recorded At</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var r in Model.Records)
+                {
+                    <tr>
+                        <td>@r.Id</td>
+                        <td>@r.City</td>
+                        <td>@r.Condition</td>
+                        <td>@r.TemperatureCelsius</td>
+                        <td>@r.TemperatureFahrenheit</td>
+                        <td>@r.Humidity</td>
+                        <td>@r.WindSpeedKmh</td>
+                        <td>@r.RecordedAt.ToString("yyyy-MM-dd HH:mm")</td>
+                        <td>
+                            <form method="post" asp-page-handler="Delete" asp-route-id="@r.Id" style="display:inline">
+                                <button type="submit" class="btn btn-danger btn-sm"
+                                        onclick="return confirm('Delete @r.City?')">Delete</button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="mt-4">
+    <h5>Quick Links</h5>
+    <a href="/swagger" target="_blank" class="btn btn-outline-primary me-2">Swagger API Docs</a>
+    <a href="/api/weather" target="_blank" class="btn btn-outline-secondary me-2">REST API</a>
+    <a href="/mcp" target="_blank" class="btn btn-outline-success">MCP Endpoint</a>
+</div>
