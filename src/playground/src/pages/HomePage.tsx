@@ -1,24 +1,30 @@
 import { Link } from 'react-router-dom'
+import { useUser } from '../contexts/UserContext'
 import './HomePage.css'
 
 export function HomePage() {
+  const { user } = useUser()
   return (
     <div className="home-page">
       <section className="hero-section">
         <div className="hero-content">
           <h1 className="hero-title">
-            Welcome to <span className="gradient-text">AI Playground</span>
+            {user ? `Welcome back, ${user.username}!` : 'Welcome to'}{' '}
+            {!user && <span className="gradient-text">AI Playground</span>}
           </h1>
+          {user && (
+            <p className="hero-user-id">Your User ID: <strong>#{user.id}</strong> — keep this to reconnect later</p>
+          )}
           <p className="hero-subtitle">
             Explore AI capabilities powered by Azure AI Foundry. Chat with intelligent
-            assistants and discover the power of modern AI.
+            assistants, create AI comic art, and discover the power of modern AI.
           </p>
           <div className="hero-actions">
-            <Link to="/chat" className="btn btn-primary">
-              Start Chatting →
+            <Link to="/comic" className="btn btn-primary">
+              🎨 Create Comics →
             </Link>
-            <Link to="/about" className="btn btn-secondary">
-              Learn More
+            <Link to="/gallery" className="btn btn-secondary">
+              🌟 Browse Gallery
             </Link>
           </div>
         </div>
@@ -44,20 +50,37 @@ export function HomePage() {
             </Link>
           </div>
           <div className="feature-card">
-            <div className="feature-icon">🔑</div>
-            <h3>Secure & Configurable</h3>
+            <div className="feature-icon">🎨</div>
+            <h3>Comic Book Studio</h3>
             <p>
-              Connect to your own Azure AI Foundry project using your API key. Your
-              credentials are used only in your browser session.
+              Describe any scene and DALL-E will generate stunning comic-style artwork.
+              Your creations are saved to your account.
             </p>
+            <Link to="/comic" className="feature-link">
+              Create Comics →
+            </Link>
+          </div>
+          <div className="feature-card">
+            <div className="feature-icon">🌟</div>
+            <h3>Community Gallery</h3>
+            <p>
+              Browse AI-generated comics from all users. Get inspired by others'
+              creations and share your own artwork with the community.
+            </p>
+            <Link to="/gallery" className="feature-link">
+              Browse Gallery →
+            </Link>
           </div>
           <div className="feature-card">
             <div className="feature-icon">⚡</div>
-            <h3>Real-time Streaming</h3>
+            <h3>Agent Builder</h3>
             <p>
-              Experience fast, streaming AI responses delivered token-by-token for a
-              responsive and engaging chat experience.
+              Configure and test custom AI agents with tools, system prompts, and
+              real-time streaming responses via MCP.
             </p>
+            <Link to="/agent" className="feature-link">
+              Build Agents →
+            </Link>
           </div>
         </div>
       </section>

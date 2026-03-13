@@ -4,20 +4,41 @@ import { HomePage } from './pages/HomePage'
 import { ChatPage } from './pages/ChatPage'
 import { AboutPage } from './pages/AboutPage'
 import { AgentBuilderPage } from './pages/AgentBuilderPage'
+import { LandingPage } from './pages/LandingPage'
+import { ComicPage } from './pages/ComicPage'
+import { GalleryPage } from './pages/GalleryPage'
+import { UserProvider, useUser } from './contexts/UserContext'
 import './App.css'
+
+function RequireUser({ children }: { children: React.ReactNode }) {
+  const { user } = useUser()
+  if (!user) return <Navigate to="/login" replace />
+  return <>{children}</>
+}
+
+function AppRoutes() {
+  return (
+    <Routes>
+      <Route path="/login" element={<LandingPage />} />
+      <Route path="/" element={<RequireUser><Layout /></RequireUser>}>
+        <Route index element={<HomePage />} />
+        <Route path="chat" element={<ChatPage />} />
+        <Route path="agent" element={<AgentBuilderPage />} />
+        <Route path="comic" element={<ComicPage />} />
+        <Route path="gallery" element={<GalleryPage />} />
+        <Route path="about" element={<AboutPage />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Route>
+    </Routes>
+  )
+}
 
 function App() {
   return (
     <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<Layout />}>
-          <Route index element={<HomePage />} />
-          <Route path="chat" element={<ChatPage />} />
-          <Route path="agent" element={<AgentBuilderPage />} />
-          <Route path="about" element={<AboutPage />} />
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Route>
-      </Routes>
+      <UserProvider>
+        <AppRoutes />
+      </UserProvider>
     </BrowserRouter>
   )
 }

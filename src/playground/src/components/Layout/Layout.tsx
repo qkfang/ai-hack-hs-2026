@@ -1,7 +1,16 @@
-import { NavLink, Outlet } from 'react-router-dom'
+import { NavLink, Outlet, useNavigate } from 'react-router-dom'
+import { useUser } from '../../contexts/UserContext'
 import './Layout.css'
 
 export function Layout() {
+  const { user, logout } = useUser()
+  const navigate = useNavigate()
+
+  function handleLogout() {
+    logout()
+    navigate('/login')
+  }
+
   return (
     <div className="app-container">
       <header className="app-header">
@@ -30,12 +39,34 @@ export function Layout() {
             Chat
           </NavLink>
           <NavLink
+            to="/comic"
+            className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}
+          >
+            🎨 Comic Studio
+          </NavLink>
+          <NavLink
+            to="/gallery"
+            className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}
+          >
+            🌟 Gallery
+          </NavLink>
+          <NavLink
             to="/about"
             className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}
           >
             About
           </NavLink>
         </nav>
+        {user && (
+          <div className="header-user">
+            <span className="user-avatar">{user.username[0].toUpperCase()}</span>
+            <span className="user-name">{user.username}</span>
+            <span className="user-id">#{user.id}</span>
+            <button className="logout-btn" onClick={handleLogout} title="Log out">
+              ↩
+            </button>
+          </div>
+        )}
       </header>
       <main className="app-main">
         <Outlet />

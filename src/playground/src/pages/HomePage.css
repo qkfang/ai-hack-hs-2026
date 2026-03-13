@@ -40,6 +40,16 @@
   margin-bottom: 2rem;
 }
 
+.hero-user-id {
+  font-size: 0.9rem;
+  color: #0078d4;
+  margin-bottom: 1rem;
+  padding: 0.5rem 0.75rem;
+  background: #e8f4fd;
+  border-radius: 8px;
+  display: inline-block;
+}
+
 .hero-actions {
   display: flex;
   gap: 1rem;
