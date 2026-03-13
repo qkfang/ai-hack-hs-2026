@@ -18,6 +18,12 @@ export function Layout() {
             Home
           </NavLink>
           <NavLink
+            to="/agent"
+            className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}
+          >
+            Agent Builder
+          </NavLink>
+          <NavLink
             to="/chat"
             className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}
           >
