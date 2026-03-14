@@ -38,6 +38,12 @@ export function Layout() {
             🎨 Comic Studio
           </NavLink>
           <NavLink
+            to="/storybook"
+            className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}
+          >
+            📖 Story Book
+          </NavLink>
+          <NavLink
             to="/gallery"
             className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}
           >
