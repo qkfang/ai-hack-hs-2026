@@ -1,4 +1,4 @@
-import { NavLink, Outlet, useNavigate } from 'react-router-dom'
+import { NavLink, Link, Outlet, useNavigate } from 'react-router-dom'
 import { useUser } from '../../contexts/UserContext'
 import './Layout.css'
 
@@ -14,29 +14,22 @@ export function Layout() {
   return (
     <div className="app-container">
       <header className="app-header">
-        <div className="header-brand">
+        <Link to="/" className="header-brand">
           <span className="brand-icon">🤖</span>
           <span className="brand-name">AI Playground</span>
-        </div>
+        </Link>
         <nav className="app-nav">
           <NavLink
-            to="/"
-            end
+            to="/chat"
             className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}
           >
-            Home
+            Chat
           </NavLink>
           <NavLink
             to="/agent"
             className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}
           >
             Agent Builder
-          </NavLink>
-          <NavLink
-            to="/chat"
-            className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}
-          >
-            Chat
           </NavLink>
           <NavLink
             to="/comic"
