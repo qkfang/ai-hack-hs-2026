@@ -1,4 +1,4 @@
-# 🤖 AI Hack HS 2026
+# 🤖 AI Hackathon for Teens
 
 > A 2-hour hands-on AI hackathon for **Year 7 – Year 12 high school students** — learn, build, and have fun with real AI tools!
 
@@ -6,7 +6,7 @@
 
 ## 🚀 What Is This?
 
-**AI Hack HS 2026** is an event kit + working codebase that lets high school students experience AI development first-hand. In just 2 hours, participants go from "what even is AI?" to running their own chatbot and weather API powered by Azure AI.
+**AI Hackathon for Teens** is an event kit + working codebase that lets high school students experience AI development first-hand. In just 2 hours, participants go from "what even is AI?" to running their own chatbot and weather API powered by Azure AI.
 
 ---
 
