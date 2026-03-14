@@ -43,12 +43,6 @@ export function Layout() {
           >
             🌟 Gallery
           </NavLink>
-          <NavLink
-            to="/about"
-            className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}
-          >
-            About
-          </NavLink>
         </nav>
         {user && (
           <div className="header-user">
