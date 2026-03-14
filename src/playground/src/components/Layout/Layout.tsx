@@ -49,6 +49,24 @@ export function Layout() {
           >
             🌟 Gallery
           </NavLink>
+          <NavLink
+            to="/translation"
+            className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}
+          >
+            🌐 Translation
+          </NavLink>
+          <NavLink
+            to="/speech"
+            className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}
+          >
+            🎙️ Speech
+          </NavLink>
+          <NavLink
+            to="/realtime"
+            className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}
+          >
+            ⚡ Realtime
+          </NavLink>
         </nav>
         {user && (
           <div className="header-user">
