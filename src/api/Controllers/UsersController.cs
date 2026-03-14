@@ -61,7 +61,30 @@ public class UsersController(UserStore store) : ControllerBase
         var comic = store.AddComic(id, description, imageUrl);
         return StatusCode(201, comic);
     }
+    [HttpGet("{id:int}/stories")]
+    public IActionResult GetUserStories(int id)
+    {
+        var user = store.GetUser(id);
+        if (user == null) return NotFound(new { error = "User not found" });
+        return Ok(user.Stories);
+    }
+
+    [HttpPost("{id:int}/stories")]
+    public IActionResult AddUserStory(int id, [FromBody] AddStoryRequest request)
+    {
+        var user = store.GetUser(id);
+        if (user == null) return NotFound(new { error = "User not found" });
+
+        var title = request.Title?.Trim() ?? "";
+        var body = request.Body?.Trim() ?? "";
+        if (string.IsNullOrEmpty(title) || string.IsNullOrEmpty(body))
+            return BadRequest(new { error = "title and body are required" });
+
+        var story = store.AddStory(id, title, body, request.CoverImageUrl?.Trim() ?? "");
+        return StatusCode(201, story);
+    }
 }
 
 public record CreateUserRequest(string? Username);
 public record AddComicRequest(string? Description, string? ImageUrl);
+public record AddStoryRequest(string? Title, string? Body, string? CoverImageUrl);

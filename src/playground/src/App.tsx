@@ -7,6 +7,7 @@ import { AgentBuilderPage } from './pages/AgentBuilderPage'
 import { LandingPage } from './pages/LandingPage'
 import { ComicPage } from './pages/ComicPage'
 import { GalleryPage } from './pages/GalleryPage'
+import { StoryBookPage } from './pages/StoryBookPage'
 import { UserProvider, useUser } from './contexts/UserContext'
 import './App.css'
 
@@ -25,6 +26,7 @@ function AppRoutes() {
         <Route path="chat" element={<ChatPage />} />
         <Route path="agent" element={<AgentBuilderPage />} />
         <Route path="comic" element={<ComicPage />} />
+        <Route path="storybook" element={<StoryBookPage />} />
         <Route path="gallery" element={<GalleryPage />} />
         <Route path="about" element={<AboutPage />} />
         <Route path="*" element={<Navigate to="/" replace />} />

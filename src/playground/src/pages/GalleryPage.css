@@ -295,3 +295,53 @@
   font-size: 0.8rem;
   color: #aaa;
 }
+
+/* Story card */
+.gallery-card--story .gallery-story-cover {
+  position: relative;
+  overflow: hidden;
+  aspect-ratio: 4 / 3;
+  background: linear-gradient(135deg, #f0e6ff, #e6f0ff);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.gallery-story-cover-placeholder {
+  font-size: 3rem;
+}
+
+.gallery-card-title {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #1a1a2e;
+  margin: 0 0 0.25rem;
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Story modal */
+.gallery-story-modal {
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.gallery-story-modal-title {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #1a1a2e;
+  margin: 0 0 1rem;
+}
+
+.gallery-story-modal-body {
+  white-space: pre-wrap;
+  font-family: 'Georgia', serif;
+  font-size: 0.95rem;
+  line-height: 1.8;
+  color: #333;
+  margin: 0 0 0.75rem;
+  max-height: 50vh;
+  overflow-y: auto;
+}

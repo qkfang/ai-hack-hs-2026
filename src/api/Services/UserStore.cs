@@ -8,12 +8,33 @@ public class ComicItem
     public string CreatedAt { get; set; } = "";
 }
 
+public class StoryItem
+{
+    public int Id { get; set; }
+    public string Title { get; set; } = "";
+    public string Body { get; set; } = "";
+    public string CoverImageUrl { get; set; } = "";
+    public string CreatedAt { get; set; } = "";
+}
+
+public class StoryGalleryEntry
+{
+    public int Id { get; set; }
+    public string Title { get; set; } = "";
+    public string Body { get; set; } = "";
+    public string CoverImageUrl { get; set; } = "";
+    public string CreatedAt { get; set; } = "";
+    public int UserId { get; set; }
+    public string Username { get; set; } = "";
+}
+
 public class AppUser
 {
     public int Id { get; set; }
     public string Username { get; set; } = "";
     public string CreatedAt { get; set; } = "";
     public List<ComicItem> Comics { get; set; } = [];
+    public List<StoryItem> Stories { get; set; } = [];
 }
 
 public class ComicGalleryEntry
@@ -31,6 +52,7 @@ public class UserStore
     private readonly Dictionary<int, AppUser> _users = [];
     private int _nextUserId = 1;
     private int _nextComicId = 1;
+    private int _nextStoryId = 1;
     private readonly object _lock = new();
 
     public AppUser CreateUser(string username)
@@ -90,6 +112,43 @@ public class UserStore
                     Username = u.Username,
                 }))
                 .OrderByDescending(c => c.CreatedAt)];
+        }
+    }
+
+    public StoryItem? AddStory(int userId, string title, string body, string coverImageUrl)
+    {
+        lock (_lock)
+        {
+            if (!_users.TryGetValue(userId, out var user)) return null;
+            var story = new StoryItem
+            {
+                Id = _nextStoryId++,
+                Title = title,
+                Body = body,
+                CoverImageUrl = coverImageUrl,
+                CreatedAt = DateTime.UtcNow.ToString("o"),
+            };
+            user.Stories.Add(story);
+            return story;
+        }
+    }
+
+    public IReadOnlyList<StoryGalleryEntry> GetAllStories()
+    {
+        lock (_lock)
+        {
+            return [.. _users.Values
+                .SelectMany(u => u.Stories.Select(s => new StoryGalleryEntry
+                {
+                    Id = s.Id,
+                    Title = s.Title,
+                    Body = s.Body,
+                    CoverImageUrl = s.CoverImageUrl,
+                    CreatedAt = s.CreatedAt,
+                    UserId = u.Id,
+                    Username = u.Username,
+                }))
+                .OrderByDescending(s => s.CreatedAt)];
         }
     }
 }
