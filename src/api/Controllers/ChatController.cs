@@ -130,21 +130,13 @@ public class ChatController(IConfiguration config, IHttpClientFactory httpClient
         var endpoint = config["AzureAIFoundry:Endpoint"] ?? "";
         var defaultDeployment = config["AzureAIFoundry:Deployment"] ?? "gpt-4o";
         var deployment = string.IsNullOrEmpty(model) ? defaultDeployment : model;
-        var openAiKey = config["OpenAI:ApiKey"] ?? "";
+        var tenantId = config["AzureAIFoundry:TenantId"] ?? "";
 
-        if (!string.IsNullOrEmpty(endpoint))
-        {
-            var azureClient = new AzureOpenAIClient(new Uri(endpoint), new DefaultAzureCredential());
-            return azureClient.GetChatClient(deployment);
-        }
-
-        if (!string.IsNullOrEmpty(openAiKey))
-        {
-            var openAiClient = new OpenAI.OpenAIClient(openAiKey);
-            return openAiClient.GetChatClient(deployment);
-        }
-
-        return null;
+        var credential = string.IsNullOrEmpty(tenantId)
+            ? new DefaultAzureCredential()
+            : new DefaultAzureCredential(new DefaultAzureCredentialOptions { TenantId = tenantId });
+        var azureClient = new AzureOpenAIClient(new Uri(endpoint), credential);
+        return azureClient.GetChatClient(deployment);
     }
 
     private static async Task<string> ExecuteMcpToolAsync(string toolName, string arguments, List<McpToolDef> enabledTools, IHttpClientFactory httpClientFactory, CancellationToken cancellationToken)

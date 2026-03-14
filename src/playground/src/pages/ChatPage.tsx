@@ -68,6 +68,15 @@ export function ChatPage() {
               }
               return copy
             })
+          } else if (event.type === 'error') {
+            setMessages(prev => {
+              const copy = [...prev]
+              const last = copy[copy.length - 1]
+              if (last?.role === 'assistant') {
+                copy[copy.length - 1] = { ...last, content: `Error: ${event.message as string}` }
+              }
+              return copy
+            })
           }
         }
       }
