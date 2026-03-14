@@ -89,6 +89,64 @@
   background: white;
 }
 
+.chat-file-input {
+  display: none;
+}
+
+.chat-attach-btn {
+  padding: 0.6rem 0.75rem;
+  background: #f1f5f9;
+  color: #4f46e5;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 1rem;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.chat-attach-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.chat-attachment-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 1.5rem;
+  background: #eef2ff;
+  border-top: 1px solid #c7d2fe;
+  font-size: 0.85rem;
+  color: #4338ca;
+}
+
+.chat-attachment-badge {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.chat-attachment-remove {
+  background: none;
+  border: none;
+  color: #4338ca;
+  cursor: pointer;
+  font-size: 0.9rem;
+  padding: 0 0.25rem;
+  flex-shrink: 0;
+}
+
+.chat-attachment-error {
+  background: #fef2f2;
+  border-top-color: #fca5a5;
+  color: #b91c1c;
+}
+
+.chat-attachment-error .chat-attachment-remove {
+  color: #b91c1c;
+}
+
 .chat-input-bar input {
   flex: 1;
   padding: 0.6rem 1rem;

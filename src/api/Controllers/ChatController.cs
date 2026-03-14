@@ -31,8 +31,11 @@ public class ChatController(IConfiguration config, IHttpClientFactory httpClient
 
             // Build message list
             var conversationMessages = new List<ChatMessage>();
-            if (!string.IsNullOrEmpty(request.SystemPrompt))
-                conversationMessages.Add(new SystemChatMessage(request.SystemPrompt));
+            var systemPrompt = request.SystemPrompt ?? "";
+            if (!string.IsNullOrWhiteSpace(request.AttachmentText))
+                systemPrompt += $"\n\n---\nThe user has attached the following document content:\n{request.AttachmentText}\n---";
+            if (!string.IsNullOrEmpty(systemPrompt))
+                conversationMessages.Add(new SystemChatMessage(systemPrompt));
             foreach (var m in request.Messages ?? [])
                 conversationMessages.Add(m.Role == "user"
                     ? (ChatMessage)new UserChatMessage(m.Content ?? "")
@@ -195,6 +198,7 @@ public record McpToolDef(string Name, string Description, string ServerUrl, bool
 public record ChatRequest(
     ChatMessageParam[]? Messages,
     string? SystemPrompt,
+    string? AttachmentText,
     string? Model,
     double? Temperature,
     int? MaxTokens,
