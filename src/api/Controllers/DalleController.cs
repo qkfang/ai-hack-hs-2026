@@ -24,7 +24,11 @@ public class DalleController(UserStore store, IConfiguration config) : Controlle
         ImageClient imageClient;
         if (!string.IsNullOrEmpty(endpoint))
         {
-            var azureClient = new AzureOpenAIClient(new Uri(endpoint), new DefaultAzureCredential());
+            var tenantId = config["AzureAIFoundry:TenantId"] ?? "";
+            var credential = string.IsNullOrEmpty(tenantId)
+                ? new DefaultAzureCredential()
+                : new DefaultAzureCredential(new DefaultAzureCredentialOptions { TenantId = tenantId });
+            var azureClient = new AzureOpenAIClient(new Uri(endpoint), credential);
             imageClient = azureClient.GetImageClient(dalleDeployment);
         }
         else if (!string.IsNullOrEmpty(openAiKey))
@@ -42,9 +46,20 @@ public class DalleController(UserStore store, IConfiguration config) : Controlle
             var result = await imageClient.GenerateImageAsync(description, new ImageGenerationOptions
             {
                 Size = GeneratedImageSize.W1024xH1024,
+                ResponseFormat = GeneratedImageFormat.Bytes,
             });
 
-            var imageUrl = result.Value.ImageUri?.ToString() ?? "";
+            string imageUrl;
+            if (result.Value.ImageBytes != null)
+            {
+                var base64 = Convert.ToBase64String(result.Value.ImageBytes.ToArray());
+                imageUrl = $"data:image/png;base64,{base64}";
+            }
+            else
+            {
+                imageUrl = result.Value.ImageUri?.ToString() ?? "";
+            }
+
             if (string.IsNullOrEmpty(imageUrl))
                 return StatusCode(500, new { error = "DALL-E did not return an image. Please check your API configuration or try again later." });
 
