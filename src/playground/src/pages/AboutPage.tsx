@@ -61,44 +61,55 @@ export function AboutPage() {
         <section className="about-section">
           <h2>Configuration</h2>
           <p>
-            To use this application, you need an Azure AI Foundry project with a deployed
-            model. You can configure the following settings on the Chat page:
+            All AI credentials (Azure AI Foundry endpoint, API keys, model deployments) are
+            configured on the <strong>server side only</strong> — they never reach the browser.
+            Update <code>src/api/appsettings.json</code> or set the equivalent environment
+            variables on your server:
           </p>
           <div className="config-table">
             <div className="config-row header">
-              <span>Setting</span>
+              <span>appsettings.json key</span>
               <span>Description</span>
               <span>Example</span>
             </div>
             <div className="config-row">
-              <span>Endpoint</span>
-              <span>Your Azure AI Foundry project endpoint</span>
+              <span>AzureAIFoundry:Endpoint</span>
+              <span>Azure AI Foundry project endpoint</span>
               <code>https://my-project.services.ai.azure.com</code>
             </div>
             <div className="config-row">
-              <span>API Key</span>
+              <span>AzureAIFoundry:ApiKey</span>
               <span>Authentication key from your Foundry project</span>
-              <code>abc123...xyz</code>
+              <code>(set via env or user-secrets)</code>
             </div>
             <div className="config-row">
-              <span>Deployment Name</span>
-              <span>Name of your deployed model</span>
+              <span>AzureAIFoundry:Deployment</span>
+              <span>Name of your deployed chat model</span>
               <code>gpt-4o</code>
             </div>
             <div className="config-row">
-              <span>System Prompt</span>
-              <span>Instructions that define the AI's behavior</span>
-              <code>You are a helpful assistant...</code>
+              <span>AzureAIFoundry:DalleDeployment</span>
+              <span>Name of your DALL-E deployment</span>
+              <code>dall-e-3</code>
+            </div>
+            <div className="config-row">
+              <span>OpenAI:ApiKey</span>
+              <span>Standard OpenAI key (used when Azure is not configured)</span>
+              <code>(set via env or user-secrets)</code>
+            </div>
+            <div className="config-row">
+              <span>OpenAI:ChatKitWorkflowId</span>
+              <span>ChatKit workflow ID for the Chat page</span>
+              <code>wf_abc123…</code>
             </div>
           </div>
           <p className="env-note">
-            💡 You can also set defaults using environment variables. Create a{' '}
-            <code>.env.local</code> file in the <code>src/playground</code> directory:
+            💡 The playground frontend only needs one setting — the backend API URL — which
+            is only relevant during local development. Create a <code>.env.local</code> file
+            in <code>src/playground</code>:
           </p>
           <div className="code-block">
-            <pre>{`VITE_AZURE_FOUNDRY_ENDPOINT=https://your-project.services.ai.azure.com
-VITE_AZURE_FOUNDRY_API_KEY=your-api-key-here
-VITE_AZURE_FOUNDRY_DEPLOYMENT=gpt-4o`}</pre>
+            <pre>{`VITE_API_BASE_URL=http://localhost:5163`}</pre>
           </div>
         </section>
 

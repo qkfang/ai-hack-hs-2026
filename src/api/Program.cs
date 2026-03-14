@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using api.Data;
 using api.Mcp;
+using api.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -8,9 +9,27 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<WeatherDbContext>(options =>
     options.UseInMemoryDatabase("WeatherDb"));
 
-// Razor Pages + MVC Controllers
+// In-memory user/comic store (singleton so state persists across requests)
+builder.Services.AddSingleton<UserStore>();
+
+// HttpClient for ChatKit session creation
+builder.Services.AddHttpClient();
+
+// CORS – allow the Vite dev server to reach the API directly if needed
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(policy =>
+        policy.WithOrigins("http://localhost:5173", "http://localhost:3000")
+              .AllowAnyHeader()
+              .AllowAnyMethod());
+});
+
+// Razor Pages + MVC Controllers (camelCase JSON to match frontend expectations)
 builder.Services.AddRazorPages();
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(opts =>
+        opts.JsonSerializerOptions.PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase);
+
 
 // Swagger / OpenAPI
 builder.Services.AddEndpointsApiExplorer();
@@ -57,6 +76,7 @@ if (!app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseRouting();
+app.UseCors();
 
 // Swagger UI
 app.UseSwagger();
