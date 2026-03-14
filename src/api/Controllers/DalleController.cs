@@ -50,6 +50,9 @@ public class DalleController(UserStore store, IConfiguration config) : Controlle
 
             var imageUrl = result.Value.ImageUri?.ToString() ?? "";
 
+            if (string.IsNullOrEmpty(imageUrl) && result.Value.ImageBytes != null)
+                imageUrl = $"data:image/png;base64,{Convert.ToBase64String(result.Value.ImageBytes.ToArray())}";
+
             if (string.IsNullOrEmpty(imageUrl))
                 return StatusCode(500, new { error = "DALL-E did not return an image. Please check your API configuration or try again later." });
 
