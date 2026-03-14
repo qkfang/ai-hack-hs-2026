@@ -8,7 +8,7 @@ namespace api.Pages.Admin;
 public class LoginModel : PageModel
 {
     // Default hardcoded password for demo; override via ADMIN_PASSWORD environment variable in production
-    private const string DefaultAdminPassword = "Admin@Weather2026!";
+    private const string DefaultAdminPassword = "9999";
 
     private readonly IConfiguration _config;
 
