@@ -8,6 +8,8 @@ interface ChatMessage {
   content: string
 }
 
+const COVER_IMAGE_KEY = 'storybook_cover_url'
+
 export function StoryBookPage() {
   const { user } = useUser()
   const [title, setTitle] = useState('')
@@ -16,6 +18,7 @@ export function StoryBookPage() {
   const [publishing, setPublishing] = useState(false)
   const [publishError, setPublishError] = useState('')
   const [publishSuccess, setPublishSuccess] = useState(false)
+  const [coverImageUrl, setCoverImageUrl] = useState(() => localStorage.getItem(COVER_IMAGE_KEY) ?? '')
 
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([])
   const [chatInput, setChatInput] = useState('')
@@ -25,6 +28,11 @@ export function StoryBookPage() {
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [chatMessages])
+
+  function handleClearCover() {
+    localStorage.removeItem(COVER_IMAGE_KEY)
+    setCoverImageUrl('')
+  }
 
   async function sendChatMessage() {
     const text = chatInput.trim()
@@ -108,7 +116,7 @@ When the user asks for changes or suggestions, provide the updated story text or
       const res = await fetch(`${API_BASE}/api/users/${user.id}/stories`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title: t, body: b, coverImageUrl: '' }),
+        body: JSON.stringify({ title: t, body: b, coverImageUrl }),
       })
       if (!res.ok) {
         const data = await res.json() as { error?: string }
@@ -137,6 +145,16 @@ When the user asks for changes or suggestions, provide the updated story text or
           onChange={e => setTitle(e.target.value)}
           maxLength={200}
         />
+
+        {coverImageUrl && (
+          <div className="storybook-cover-preview">
+            <img src={coverImageUrl} alt="Story book cover image" className="storybook-cover-img" />
+            <div className="storybook-cover-info">
+              <span>🎨 Comic Studio cover</span>
+              <button className="storybook-cover-clear" onClick={handleClearCover}>✕ Remove</button>
+            </div>
+          </div>
+        )}
 
         <div className="storybook-view-toggle">
           <button
