@@ -123,3 +123,34 @@
   background: rgba(255, 255, 255, 0.2);
   color: white;
 }
+
+/* Max layout */
+.app-main {
+  position: relative;
+}
+
+.max-layout-btn {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  z-index: 50;
+  background: rgba(0, 0, 0, 0.08);
+  border: none;
+  border-radius: 6px;
+  padding: 0.25rem 0.5rem;
+  font-size: 1.1rem;
+  cursor: pointer;
+  color: #555;
+  line-height: 1;
+  transition: background 0.2s;
+}
+
+.max-layout-btn:hover {
+  background: rgba(0, 0, 0, 0.15);
+  color: #111;
+}
+
+.max-layout .app-main {
+  height: 100vh;
+  overflow: auto;
+}
