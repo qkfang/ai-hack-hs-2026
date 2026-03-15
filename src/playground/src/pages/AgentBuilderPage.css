@@ -931,3 +931,27 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* ── Code Tab ─────────────────────────────────────────────────────────────── */
+.ab-code {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 2rem;
+  text-align: center;
+  color: #6b7280;
+}
+
+.ab-code-header h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #1a3a6b;
+  margin-bottom: 0.75rem;
+}
+
+.ab-code-header p {
+  font-size: 1rem;
+  color: #6b7280;
+}

@@ -293,7 +293,7 @@ function ToolCallBlock({ name, args, result }: { name: string; args: string; res
 // ─── Main Page ────────────────────────────────────────────────────────────────
 
 export function AgentBuilderPage() {
-  const [activeTab, setActiveTab] = useState<'designer' | 'use'>('designer')
+  const [activeTab, setActiveTab] = useState<'designer' | 'use' | 'code'>('designer')
   const [config, setConfig] = useState<AgentConfig>(loadConfig)
   const [activity, setActivity] = useState<ActivityItem[]>([])
   const [input, setInput] = useState('')
@@ -504,6 +504,12 @@ export function AgentBuilderPage() {
             onClick={() => setActiveTab('use')}
           >
             💬 Use
+          </button>
+          <button
+            className={`ab-tab ${activeTab === 'code' ? 'ab-tab-active' : ''}`}
+            onClick={() => setActiveTab('code')}
+          >
+            💻 Code
           </button>
         </div>
         <div className="ab-tabbar-right">
@@ -894,6 +900,16 @@ export function AgentBuilderPage() {
                 )}
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── CODE TAB ──────────────────────────────────────────────────────── */}
+      {activeTab === 'code' && (
+        <div className="ab-code">
+          <div className="ab-code-header">
+            <h2>💻 Code</h2>
+            <p>Copilot SDK integration coming soon — prompt driver code UI will appear here.</p>
           </div>
         </div>
       )}
