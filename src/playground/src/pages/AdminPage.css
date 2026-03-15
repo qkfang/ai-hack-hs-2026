@@ -1,0 +1,221 @@
+.admin-page {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.admin-login-card {
+  background: var(--card-bg, #fff);
+  border-radius: 12px;
+  border: 1px solid var(--border, #e0e0e0);
+  padding: 2.5rem;
+  text-align: center;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+
+.admin-login-card h1 {
+  font-size: 1.8rem;
+  margin: 0 0 0.5rem;
+}
+
+.admin-login-card p {
+  color: #666;
+  margin: 0 0 1.5rem;
+}
+
+.admin-login-form {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: center;
+}
+
+.admin-pw-input {
+  padding: 0.65rem 1rem;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 1rem;
+  outline: none;
+  transition: border-color 0.2s;
+  width: 180px;
+}
+
+.admin-pw-input:focus {
+  border-color: #0078d4;
+}
+
+.admin-pw-input.error {
+  border-color: #d13438;
+}
+
+.admin-pw-error {
+  color: #d13438;
+  margin: 0.5rem 0 0;
+  font-size: 0.9rem;
+}
+
+.admin-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.admin-header h1 {
+  font-size: 1.8rem;
+  margin: 0;
+}
+
+.admin-status-badge {
+  padding: 0.3rem 0.8rem;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.admin-status-badge.waiting {
+  background: #fff4ce;
+  color: #8a6c00;
+}
+
+.admin-status-badge.inprogress {
+  background: #dff6dd;
+  color: #107c10;
+}
+
+.admin-status-badge.finished {
+  background: #f0f7ff;
+  color: #0078d4;
+}
+
+.admin-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.admin-btn {
+  padding: 0.65rem 1.25rem;
+  border-radius: 8px;
+  border: 2px solid #e0e0e0;
+  background: #fff;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s, opacity 0.2s;
+}
+
+.admin-btn:hover:not(:disabled) {
+  border-color: #0078d4;
+  background: #f0f7ff;
+}
+
+.admin-btn:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.admin-btn.primary {
+  background: #0078d4;
+  color: #fff;
+  border-color: #0078d4;
+}
+
+.admin-btn.primary:hover:not(:disabled) {
+  background: #005ea2;
+  border-color: #005ea2;
+}
+
+.admin-btn.success {
+  background: #107c10;
+  color: #fff;
+  border-color: #107c10;
+}
+
+.admin-btn.success:hover:not(:disabled) {
+  background: #0b5e0b;
+  border-color: #0b5e0b;
+}
+
+.admin-btn.danger {
+  background: #fff;
+  color: #d13438;
+  border-color: #d13438;
+}
+
+.admin-btn.danger:hover:not(:disabled) {
+  background: #fde7e9;
+}
+
+.admin-question-card {
+  background: var(--card-bg, #fff);
+  border-radius: 12px;
+  border: 1px solid var(--border, #e0e0e0);
+  padding: 1.5rem;
+}
+
+.admin-q-header {
+  font-size: 0.85rem;
+  color: #888;
+  margin-bottom: 0.75rem;
+}
+
+.admin-q-text {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 0 0 0.75rem;
+}
+
+.admin-q-options {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.admin-q-option {
+  font-size: 0.9rem;
+  color: #444;
+}
+
+.admin-leaderboard {
+  background: var(--card-bg, #fff);
+  border-radius: 12px;
+  border: 1px solid var(--border, #e0e0e0);
+  padding: 1.5rem;
+}
+
+.admin-leaderboard h3 {
+  margin: 0 0 1rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.admin-no-scores {
+  color: #888;
+  text-align: center;
+  padding: 0.75rem;
+}
+
+.admin-lb-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.admin-lb-table th, .admin-lb-table td {
+  padding: 0.5rem 0.75rem;
+  text-align: left;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.admin-lb-table th {
+  color: #888;
+  font-weight: 600;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+}

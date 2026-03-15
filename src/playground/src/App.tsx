@@ -11,6 +11,8 @@ import { StoryBookPage } from './pages/StoryBookPage'
 import { TranslationPage } from './pages/TranslationPage'
 import { SpeechPage } from './pages/SpeechPage'
 import { RealtimePage } from './pages/RealtimePage'
+import { QuizPage } from './pages/QuizPage'
+import { AdminPage } from './pages/AdminPage'
 import { UserProvider, useUser } from './contexts/UserContext'
 import './App.css'
 
@@ -34,6 +36,8 @@ function AppRoutes() {
         <Route path="translation" element={<TranslationPage />} />
         <Route path="speech" element={<SpeechPage />} />
         <Route path="realtime" element={<RealtimePage />} />
+        <Route path="quiz" element={<QuizPage />} />
+        <Route path="admin" element={<AdminPage />} />
         <Route path="about" element={<AboutPage />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>

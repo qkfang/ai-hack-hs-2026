@@ -70,6 +70,18 @@ export function Layout() {
             >
               ⚡ Realtime
             </NavLink>
+            <NavLink
+              to="/quiz"
+              className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}
+            >
+              🧠 Quiz
+            </NavLink>
+            <NavLink
+              to="/admin"
+              className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}
+            >
+              🎛️ Admin
+            </NavLink>
           </nav>
           {user && (
             <div className="header-user">
