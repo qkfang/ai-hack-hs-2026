@@ -10,13 +10,19 @@ interface ComicItem {
   createdAt: string
 }
 
+const COVER_IMAGE_KEY = 'storybook_cover_url'
+
 export function ComicPage() {
   const { user } = useUser()
   const [description, setDescription] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [comics, setComics] = useState<ComicItem[]>([])
-  const [latestImageUrl, setLatestImageUrl] = useState('')
+  const [selectedImageUrl, setSelectedImageUrl] = useState('')
+  const [editPrompt, setEditPrompt] = useState('')
+  const [editLoading, setEditLoading] = useState(false)
+  const [editError, setEditError] = useState('')
+  const [coverSet, setCoverSet] = useState(false)
 
   async function handleGenerate(e: React.FormEvent) {
     e.preventDefault()
@@ -24,7 +30,8 @@ export function ComicPage() {
     const desc = description.trim()
     if (!desc) { setError('Please enter a description for your comic.'); return }
     setLoading(true)
-    setLatestImageUrl('')
+    setSelectedImageUrl('')
+    setCoverSet(false)
     try {
       const res = await fetch(`${API_BASE}/api/dalle`, {
         method: 'POST',
@@ -34,7 +41,7 @@ export function ComicPage() {
       const data = await res.json() as { imageUrl?: string; error?: string }
       if (!res.ok) throw new Error(data.error ?? 'Image generation failed')
       const imageUrl = data.imageUrl ?? ''
-      setLatestImageUrl(imageUrl)
+      setSelectedImageUrl(imageUrl)
       const newComic: ComicItem = {
         id: Date.now(),
         description: desc,
@@ -48,6 +55,51 @@ export function ComicPage() {
     } finally {
       setLoading(false)
     }
+  }
+
+  async function handleEdit(e: React.FormEvent) {
+    e.preventDefault()
+    setEditError('')
+    const prompt = editPrompt.trim()
+    if (!prompt || !selectedImageUrl) return
+    setEditLoading(true)
+    setCoverSet(false)
+    try {
+      const res = await fetch(`${API_BASE}/api/dalle/edit`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ imageUrl: selectedImageUrl, prompt }),
+      })
+      const data = await res.json() as { imageUrl?: string; error?: string }
+      if (!res.ok) throw new Error(data.error ?? 'Image edit failed')
+      const newUrl = data.imageUrl ?? ''
+      setSelectedImageUrl(newUrl)
+      const newComic: ComicItem = {
+        id: Date.now(),
+        description: `Edit: ${prompt}`,
+        imageUrl: newUrl,
+        createdAt: new Date().toISOString(),
+      }
+      setComics(prev => [newComic, ...prev])
+      setEditPrompt('')
+    } catch (err) {
+      setEditError(err instanceof Error ? err.message : 'Something went wrong')
+    } finally {
+      setEditLoading(false)
+    }
+  }
+
+  function handleSetCover() {
+    if (!selectedImageUrl) return
+    localStorage.setItem(COVER_IMAGE_KEY, selectedImageUrl)
+    setCoverSet(true)
+  }
+
+  function handleSelectComic(imageUrl: string) {
+    setSelectedImageUrl(imageUrl)
+    setEditPrompt('')
+    setEditError('')
+    setCoverSet(false)
   }
 
   const placeholders = [
@@ -104,16 +156,49 @@ export function ComicPage() {
               🖌️ DALL-E is painting your scene… this may take a moment
             </div>
           )}
+
+          {selectedImageUrl && (
+            <div className="comic-edit-panel">
+              <h3>✏️ Edit Selected Image</h3>
+              <form onSubmit={handleEdit} className="comic-edit-form">
+                <textarea
+                  className="comic-textarea"
+                  placeholder="Describe what to change, e.g. 'Make the sky purple and add shooting stars'…"
+                  value={editPrompt}
+                  onChange={e => setEditPrompt(e.target.value)}
+                  rows={3}
+                  maxLength={500}
+                  disabled={editLoading}
+                />
+                {editError && <div className="comic-error">{editError}</div>}
+                <button
+                  type="submit"
+                  className="comic-edit-btn"
+                  disabled={editLoading || !editPrompt.trim()}
+                >
+                  {editLoading ? (
+                    <><span className="spinner" />Applying changes…</>
+                  ) : '🔄 Apply Changes'}
+                </button>
+              </form>
+              <button
+                className={`comic-cover-btn${coverSet ? ' cover-set' : ''}`}
+                onClick={handleSetCover}
+              >
+                {coverSet ? '✅ Set as Story Book Cover!' : '📚 Use as Story Book Cover'}
+              </button>
+            </div>
+          )}
         </div>
 
         <div className="comic-preview-panel">
-          {latestImageUrl ? (
+          {selectedImageUrl ? (
             <div className="comic-latest">
-              <h2>🖼️ Latest Creation</h2>
-              <div className="comic-image-frame">
-                <img src={latestImageUrl} alt="Generated comic" className="comic-image" />
+              <h2>🖼️ Selected Image</h2>
+              <div className="comic-image-frame selected">
+                <img src={selectedImageUrl} alt="Selected comic" className="comic-image" />
               </div>
-              <a href={latestImageUrl} target="_blank" rel="noopener noreferrer" className="comic-download-link">
+              <a href={selectedImageUrl} target="_blank" rel="noopener noreferrer" className="comic-download-link">
                 Open full size ↗
               </a>
             </div>
@@ -131,7 +216,11 @@ export function ComicPage() {
           <h2>📚 Your Comics This Session</h2>
           <div className="comic-grid">
             {comics.map(comic => (
-              <div key={comic.id} className="comic-card">
+              <div
+                key={comic.id}
+                className={`comic-card${comic.imageUrl === selectedImageUrl ? ' selected' : ''}`}
+                onClick={() => handleSelectComic(comic.imageUrl)}
+              >
                 <img src={comic.imageUrl} alt={comic.description} className="comic-card-img" />
                 <div className="comic-card-body">
                   <p className="comic-card-desc">{comic.description}</p>

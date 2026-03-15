@@ -254,7 +254,97 @@
   overflow: hidden;
 }
 
-.comic-card-time {
-  font-size: 0.75rem;
-  color: #999;
+.comic-image-frame.selected {
+  outline: 3px solid #0078d4;
+  box-shadow: 0 0 0 4px rgba(0, 120, 212, 0.25), 0 4px 20px rgba(0, 0, 0, 0.15);
 }
+
+.comic-edit-panel {
+  margin-top: 1.5rem;
+  padding: 1.25rem;
+  background: #f0f7ff;
+  border-radius: 12px;
+  border: 1px solid #c7e0f4;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.comic-edit-panel h3 {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #1a1a2e;
+  margin: 0;
+}
+
+.comic-edit-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.comic-edit-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background: linear-gradient(135deg, #0078d4, #00b4ff);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 0.65rem 1rem;
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.2s ease;
+}
+
+.comic-edit-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 120, 212, 0.4);
+}
+
+.comic-edit-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.comic-cover-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: white;
+  color: #6366f1;
+  border: 2px solid #6366f1;
+  border-radius: 8px;
+  padding: 0.65rem 1rem;
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.2s ease;
+}
+
+.comic-cover-btn:hover {
+  background: #6366f1;
+  color: white;
+}
+
+.comic-cover-btn.cover-set {
+  background: #f0fff4;
+  border-color: #2f855a;
+  color: #2f855a;
+  cursor: default;
+}
+
+.comic-card {
+  cursor: pointer;
+}
+
+.comic-card.selected {
+  outline: 3px solid #0078d4;
+  box-shadow: 0 0 0 3px rgba(0, 120, 212, 0.2), 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+

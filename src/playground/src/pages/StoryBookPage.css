@@ -34,6 +34,54 @@
   color: #0078d4;
 }
 
+.storybook-cover-preview {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  background: white;
+  border: 2px solid #6366f1;
+  border-radius: 10px;
+}
+
+.storybook-cover-img {
+  width: 72px;
+  height: 72px;
+  object-fit: cover;
+  border-radius: 6px;
+  flex-shrink: 0;
+}
+
+.storybook-cover-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  flex: 1;
+}
+
+.storybook-cover-info span {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #6366f1;
+}
+
+.storybook-cover-clear {
+  align-self: flex-start;
+  background: none;
+  border: 1px solid #e0e6ed;
+  border-radius: 6px;
+  padding: 0.2rem 0.5rem;
+  font-size: 0.75rem;
+  color: #888;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.storybook-cover-clear:hover {
+  border-color: #e53e3e;
+  color: #e53e3e;
+}
+
 .storybook-title-input {
   width: 100%;
   padding: 0.75rem 1rem;
