@@ -41,6 +41,26 @@ jobs:
     runs-on: ubuntu-latest
     environment: dev
     steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "9.0.x"
+
+      - name: Install EF Core tools
+        run: dotnet tool install --global dotnet-ef
+
+      - name: Restore dependencies
+        working-directory: src/api
+        run: dotnet restore
+
+      - name: Run database migrations
+        working-directory: src/api
+        env:
+          ConnectionStrings__DefaultConnection: ${{ secrets.SQL_CONNECTION_STRING }}
+        run: dotnet ef database update
+
       - name: Download artifact
         uses: actions/download-artifact@v4
         with:

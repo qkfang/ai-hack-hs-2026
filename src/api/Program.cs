@@ -5,9 +5,9 @@ using api.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// EF Core In-Memory database
+// EF Core SQL Server database
 builder.Services.AddDbContext<WeatherDbContext>(options =>
-    options.UseInMemoryDatabase("WeatherDb"));
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // In-memory user/comic store (singleton so state persists across requests)
 builder.Services.AddSingleton<UserStore>();
@@ -61,11 +61,11 @@ builder.Services.AddAuthorization();
 
 var app = builder.Build();
 
-// Seed in-memory database
+// Apply pending database migrations on startup
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<WeatherDbContext>();
-    db.Database.EnsureCreated();
+    db.Database.Migrate();
 }
 
 // Configure HTTP pipeline

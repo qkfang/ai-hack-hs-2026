@@ -9,6 +9,13 @@ param azureAIFoundryDeployment string = 'gpt-4o'
 param azureAIFoundryDalleDeployment string = 'gpt-image-1'
 param azureAIFoundryTenantId string = '9d2116ce-afe6-4ce8-8bc3-c7c7b69856c2'
 
+@description('SQL Server administrator login name')
+param sqlAdminLogin string = 'sqladmin'
+
+@description('SQL Server administrator password')
+@secure()
+param sqlAdminPassword string
+
 var uniqueSuffix = uniqueString(resourceGroup().id)
 var keyVaultName = '${baseName}-kv-${take(uniqueSuffix, 6)}'
 var storageAccountName = '${baseName}st${take(uniqueSuffix, 6)}'
@@ -17,6 +24,7 @@ var logAnalyticsWorkspaceName = '${baseName}-log'
 var webAppName = '${baseName}-app'
 var appServicePlanName = '${baseName}-asp'
 var staticWebAppName = '${baseName}-swa'
+var sqlServerName = '${baseName}-sql-${take(uniqueSuffix, 6)}'
 
 module keyVault 'modules/keyvault.bicep' = {
   name: 'keyVaultDeployment'
@@ -43,6 +51,16 @@ module appInsights 'modules/appinsights.bicep' = {
   }
 }
 
+module sqlServer 'modules/sqlserver.bicep' = {
+  name: 'sqlServerDeployment'
+  params: {
+    name: sqlServerName
+    location: location
+    adminLogin: sqlAdminLogin
+    adminPassword: sqlAdminPassword
+  }
+}
+
 module webApp 'modules/webapp.bicep' = {
   name: 'webAppDeployment'
   params: {
@@ -54,6 +72,7 @@ module webApp 'modules/webapp.bicep' = {
     azureAIFoundryDeployment: azureAIFoundryDeployment
     azureAIFoundryDalleDeployment: azureAIFoundryDalleDeployment
     azureAIFoundryTenantId: azureAIFoundryTenantId
+    sqlConnectionString: sqlServer.outputs.connectionString
   }
 }
 
@@ -74,3 +93,5 @@ output webAppName string = webApp.outputs.name
 output webAppHostName string = webApp.outputs.defaultHostName
 output staticWebAppName string = staticWebApp.outputs.name
 output staticWebAppHostName string = staticWebApp.outputs.defaultHostName
+output sqlServerName string = sqlServer.outputs.serverName
+output sqlServerFqdn string = sqlServer.outputs.serverFqdn

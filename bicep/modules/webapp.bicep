@@ -6,6 +6,7 @@ param azureAIFoundryEndpoint string
 param azureAIFoundryDeployment string
 param azureAIFoundryDalleDeployment string
 param azureAIFoundryTenantId string
+param sqlConnectionString string
 param skuName string = 'S1'
 param skuTier string = 'Standard'
 param linuxFxVersion string = 'DOTNETCORE|9.0'
@@ -64,6 +65,10 @@ resource webApp 'Microsoft.Web/sites@2023-12-01' = {
         {
           name: 'AzureAIFoundry__TenantId'
           value: azureAIFoundryTenantId
+        }
+        {
+          name: 'ConnectionStrings__DefaultConnection'
+          value: sqlConnectionString
         }
       ]
     }
