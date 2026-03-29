@@ -1,5 +1,6 @@
 import { useState, useRef } from 'react'
 import { API_BASE } from '../config'
+import { useRateLimit } from '../hooks/useRateLimit'
 import './SpeechPage.css'
 
 const VOICES = [
@@ -28,13 +29,14 @@ export function SpeechPage() {
   const [error, setError] = useState<string | null>(null)
   const [audioUrl, setAudioUrl] = useState<string | null>(null)
   const audioRef = useRef<HTMLAudioElement>(null)
+  const { isRateLimited, countdown, triggerRateLimit } = useRateLimit()
 
   // Speech-to-text state
   const [isRecording, setIsRecording] = useState(false)
   const recognitionRef = useRef<SpeechRecognition | null>(null)
 
   async function synthesize() {
-    if (!text.trim() || isLoading) return
+    if (!text.trim() || isLoading || isRateLimited) return
     setIsLoading(true)
     setError(null)
     if (audioUrl) {
@@ -47,6 +49,12 @@ export function SpeechPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ text, voice }),
       })
+      if (res.status === 429) {
+        const data = await res.json()
+        triggerRateLimit(data.retryAfter ?? 15)
+        setError(data.error ?? 'Rate limit reached, please wait.')
+        return
+      }
       if (!res.ok) {
         const data = await res.json()
         setError(data.error ?? 'Synthesis failed')
@@ -135,9 +143,9 @@ export function SpeechPage() {
             <button
               className="synthesize-btn"
               onClick={synthesize}
-              disabled={isLoading || !text.trim()}
+              disabled={isLoading || isRateLimited || !text.trim()}
             >
-              {isLoading ? 'Synthesizing…' : '▶ Synthesize'}
+              {isLoading ? 'Synthesizing…' : isRateLimited ? `Wait ${countdown}s` : '▶ Synthesize'}
             </button>
           </div>
         </div>
@@ -150,6 +158,9 @@ export function SpeechPage() {
         )}
 
         {error && <div className="speech-error">⚠ {error}</div>}
+        {isRateLimited && !error && (
+          <div className="speech-rate-limit">⏳ Please wait <strong>{countdown}s</strong> before synthesizing again.</div>
+        )}
       </div>
     </div>
   )

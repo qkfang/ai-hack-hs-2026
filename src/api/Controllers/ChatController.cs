@@ -1,15 +1,17 @@
 using System.Text;
 using System.Text.Json;
+using Azure;
 using Azure.AI.OpenAI;
 using Azure.Identity;
 using Microsoft.AspNetCore.Mvc;
 using OpenAI.Chat;
+using api.Services;
 
 namespace api.Controllers;
 
 [ApiController]
 [Route("api/chat")]
-public class ChatController(IConfiguration config, IHttpClientFactory httpClientFactory) : ControllerBase
+public class ChatController(IConfiguration config, IHttpClientFactory httpClientFactory, AzureKeyPoolService keyPool) : ControllerBase
 {
     private static readonly JsonSerializerOptions JsonOptions = new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
 
@@ -22,12 +24,15 @@ public class ChatController(IConfiguration config, IHttpClientFactory httpClient
 
         try
         {
-            var chatClient = BuildChatClient(request.Model ?? "");
-            if (chatClient is null)
+            var entry = keyPool.FoundryPool.GetNext();
+            if (entry is null)
             {
-                await SendSseAsync(new { type = "error", message = "AzureAIFoundry or OpenAI credentials must be configured in appsettings" }, cancellationToken);
+                var wait = keyPool.FoundryPool.GetMinRetryAfterSeconds();
+                await SendSseAsync(new { type = "error", message = "Rate limit reached, please wait.", retryAfter = wait }, cancellationToken);
                 return;
             }
+
+            var chatClient = BuildChatClient(request.Model ?? "", entry);
 
             // Build message list
             var conversationMessages = new List<ChatMessage>();
@@ -62,61 +67,70 @@ public class ChatController(IConfiguration config, IHttpClientFactory httpClient
             };
             foreach (var tool in chatTools) options.Tools.Add(tool);
 
-            const int MaxIterations = 10;
-            for (int iteration = 0; iteration < MaxIterations; iteration++)
+            try
             {
-                var toolCallAccumulator = new Dictionary<int, (string Id, string Name, string Arguments)>();
-                var assistantContent = new StringBuilder();
-
-                await foreach (var update in chatClient.CompleteChatStreamingAsync(conversationMessages, options, cancellationToken))
+                const int MaxIterations = 10;
+                for (int iteration = 0; iteration < MaxIterations; iteration++)
                 {
-                    foreach (var part in update.ContentUpdate)
+                    var toolCallAccumulator = new Dictionary<int, (string Id, string Name, string Arguments)>();
+                    var assistantContent = new StringBuilder();
+
+                    await foreach (var update in chatClient.CompleteChatStreamingAsync(conversationMessages, options, cancellationToken))
                     {
-                        if (!string.IsNullOrEmpty(part.Text))
+                        foreach (var part in update.ContentUpdate)
                         {
-                            assistantContent.Append(part.Text);
-                            await SendSseAsync(new { type = "content", content = part.Text }, cancellationToken);
+                            if (!string.IsNullOrEmpty(part.Text))
+                            {
+                                assistantContent.Append(part.Text);
+                                await SendSseAsync(new { type = "content", content = part.Text }, cancellationToken);
+                            }
+                        }
+
+                        foreach (var tcUpdate in update.ToolCallUpdates)
+                        {
+                            if (!toolCallAccumulator.ContainsKey(tcUpdate.Index))
+                                toolCallAccumulator[tcUpdate.Index] = ("", "", "");
+                            var (existingId, existingName, existingArgs) = toolCallAccumulator[tcUpdate.Index];
+                            toolCallAccumulator[tcUpdate.Index] = (
+                                string.IsNullOrEmpty(tcUpdate.ToolCallId) ? existingId : tcUpdate.ToolCallId,
+                                existingName + (tcUpdate.FunctionName ?? ""),
+                                existingArgs + (tcUpdate.FunctionArgumentsUpdate?.ToString() ?? "")
+                            );
                         }
                     }
 
-                    foreach (var tcUpdate in update.ToolCallUpdates)
+                    var toolCalls = toolCallAccumulator.Values.ToList();
+                    if (toolCalls.Count == 0)
                     {
-                        if (!toolCallAccumulator.ContainsKey(tcUpdate.Index))
-                            toolCallAccumulator[tcUpdate.Index] = ("", "", "");
-                        var (existingId, existingName, existingArgs) = toolCallAccumulator[tcUpdate.Index];
-                        toolCallAccumulator[tcUpdate.Index] = (
-                            string.IsNullOrEmpty(tcUpdate.ToolCallId) ? existingId : tcUpdate.ToolCallId,
-                            existingName + (tcUpdate.FunctionName ?? ""),
-                            existingArgs + (tcUpdate.FunctionArgumentsUpdate?.ToString() ?? "")
-                        );
+                        conversationMessages.Add(new AssistantChatMessage(assistantContent.ToString()));
+                        break;
+                    }
+
+                    // Build assistant message with tool calls
+                    var assistantMsg = new AssistantChatMessage(assistantContent.ToString());
+                    foreach (var tc in toolCalls)
+                        assistantMsg.ToolCalls.Add(ChatToolCall.CreateFunctionToolCall(tc.Id, tc.Name, BinaryData.FromString(tc.Arguments)));
+                    conversationMessages.Add(assistantMsg);
+
+                    // Execute each tool call
+                    foreach (var tc in toolCalls)
+                    {
+                        await SendSseAsync(new { type = "tool_call", name = tc.Name, arguments = tc.Arguments }, cancellationToken);
+
+                        var toolResult = await ExecuteMcpToolAsync(tc.Name, tc.Arguments, enabledTools, httpClientFactory, cancellationToken);
+                        await SendSseAsync(new { type = "tool_result", name = tc.Name, result = toolResult }, cancellationToken);
+                        conversationMessages.Add(new ToolChatMessage(tc.Id, toolResult));
                     }
                 }
 
-                var toolCalls = toolCallAccumulator.Values.ToList();
-                if (toolCalls.Count == 0)
-                {
-                    conversationMessages.Add(new AssistantChatMessage(assistantContent.ToString()));
-                    break;
-                }
-
-                // Build assistant message with tool calls
-                var assistantMsg = new AssistantChatMessage(assistantContent.ToString());
-                foreach (var tc in toolCalls)
-                    assistantMsg.ToolCalls.Add(ChatToolCall.CreateFunctionToolCall(tc.Id, tc.Name, BinaryData.FromString(tc.Arguments)));
-                conversationMessages.Add(assistantMsg);
-
-                // Execute each tool call
-                foreach (var tc in toolCalls)
-                {
-                    await SendSseAsync(new { type = "tool_call", name = tc.Name, arguments = tc.Arguments }, cancellationToken);
-
-                    var toolResult = await ExecuteMcpToolAsync(tc.Name, tc.Arguments, enabledTools, httpClientFactory, cancellationToken);
-                    await SendSseAsync(new { type = "tool_result", name = tc.Name, result = toolResult }, cancellationToken);
-                    conversationMessages.Add(new ToolChatMessage(tc.Id, toolResult));
-                }
+                await SendSseAsync(new { type = "done" }, cancellationToken);
             }
-
-            await SendSseAsync(new { type = "done" }, cancellationToken);
+            catch (RequestFailedException ex) when (ex.Status == 429)
+            {
+                entry.MarkRateLimited(ParseRetryAfter(ex));
+                var wait = keyPool.FoundryPool.GetMinRetryAfterSeconds();
+                await SendSseAsync(new { type = "error", message = "Rate limit reached, please wait.", retryAfter = wait }, cancellationToken);
+            }
         }
         catch (OperationCanceledException)
         {
@@ -128,18 +142,33 @@ public class ChatController(IConfiguration config, IHttpClientFactory httpClient
         }
     }
 
-    private ChatClient? BuildChatClient(string model)
+    private ChatClient BuildChatClient(string model, FoundryEntry entry)
     {
-        var endpoint = config["AzureAIFoundry:Endpoint"] ?? "";
         var defaultDeployment = config["AzureAIFoundry:Deployment"] ?? "gpt-4o";
         var deployment = string.IsNullOrEmpty(model) ? defaultDeployment : model;
-        var tenantId = config["AzureAIFoundry:TenantId"] ?? "";
 
-        var credential = string.IsNullOrEmpty(tenantId)
-            ? new DefaultAzureCredential()
-            : new DefaultAzureCredential(new DefaultAzureCredentialOptions { TenantId = tenantId });
-        var azureClient = new AzureOpenAIClient(new Uri(endpoint), credential);
+        AzureOpenAIClient azureClient;
+        if (!string.IsNullOrEmpty(entry.Key))
+        {
+            azureClient = new AzureOpenAIClient(new Uri(entry.Url), new AzureKeyCredential(entry.Key));
+        }
+        else
+        {
+            var credential = string.IsNullOrEmpty(entry.TenantId)
+                ? new DefaultAzureCredential()
+                : new DefaultAzureCredential(new DefaultAzureCredentialOptions { TenantId = entry.TenantId });
+            azureClient = new AzureOpenAIClient(new Uri(entry.Url), credential);
+        }
         return azureClient.GetChatClient(deployment);
+    }
+
+    private static int ParseRetryAfter(RequestFailedException ex, int defaultSeconds = 60)
+    {
+        var response = ex.GetRawResponse();
+        if (response is not null && response.Headers.TryGetValue("Retry-After", out var val)
+            && int.TryParse(val, out var secs))
+            return Math.Max(1, secs);
+        return defaultSeconds;
     }
 
     private static async Task<string> ExecuteMcpToolAsync(string toolName, string arguments, List<McpToolDef> enabledTools, IHttpClientFactory httpClientFactory, CancellationToken cancellationToken)
@@ -213,3 +242,4 @@ internal record McpToolCallRequest(
     [property: System.Text.Json.Serialization.JsonPropertyName("method")] string Method,
     [property: System.Text.Json.Serialization.JsonPropertyName("params")] object Params,
     [property: System.Text.Json.Serialization.JsonPropertyName("id")] long Id);
+

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useUser } from '../contexts/UserContext'
 import { API_BASE } from '../config'
+import { useRateLimit } from '../hooks/useRateLimit'
 import './ComicPage.css'
 
 interface ComicItem {
@@ -23,6 +24,7 @@ export function ComicPage() {
   const [editLoading, setEditLoading] = useState(false)
   const [editError, setEditError] = useState('')
   const [coverSet, setCoverSet] = useState(false)
+  const { isRateLimited, countdown, triggerRateLimit } = useRateLimit()
 
   async function handleGenerate(e: React.FormEvent) {
     e.preventDefault()
@@ -38,7 +40,12 @@ export function ComicPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ description: desc, userId: user?.id }),
       })
-      const data = await res.json() as { imageUrl?: string; error?: string }
+      const data = await res.json() as { imageUrl?: string; error?: string; retryAfter?: number }
+      if (res.status === 429) {
+        triggerRateLimit(data.retryAfter ?? 15)
+        setError(data.error ?? 'Rate limit reached, please wait.')
+        return
+      }
       if (!res.ok) throw new Error(data.error ?? 'Image generation failed')
       const imageUrl = data.imageUrl ?? ''
       setSelectedImageUrl(imageUrl)
@@ -70,7 +77,12 @@ export function ComicPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ imageUrl: selectedImageUrl, prompt }),
       })
-      const data = await res.json() as { imageUrl?: string; error?: string }
+      const data = await res.json() as { imageUrl?: string; error?: string; retryAfter?: number }
+      if (res.status === 429) {
+        triggerRateLimit(data.retryAfter ?? 15)
+        setEditError(data.error ?? 'Rate limit reached, please wait.')
+        return
+      }
       if (!res.ok) throw new Error(data.error ?? 'Image edit failed')
       const newUrl = data.imageUrl ?? ''
       setSelectedImageUrl(newUrl)
@@ -135,17 +147,20 @@ export function ComicPage() {
             />
             <div className="comic-char-count">{description.length} / 1000</div>
             {error && <div className="comic-error">{error}</div>}
+            {isRateLimited && (
+              <div className="comic-rate-limit">⏳ Please wait <strong>{countdown}s</strong> before trying again.</div>
+            )}
             <button
               type="submit"
               className="comic-generate-btn"
-              disabled={loading || !description.trim()}
+              disabled={loading || isRateLimited || !description.trim()}
             >
               {loading ? (
                 <>
                   <span className="spinner" />
                   Generating your comic…
                 </>
-              ) : (
+              ) : isRateLimited ? `Wait ${countdown}s` : (
                 '✨ Generate Comic'
               )}
             </button>
@@ -174,11 +189,11 @@ export function ComicPage() {
                 <button
                   type="submit"
                   className="comic-edit-btn"
-                  disabled={editLoading || !editPrompt.trim()}
+                  disabled={editLoading || isRateLimited || !editPrompt.trim()}
                 >
                   {editLoading ? (
                     <><span className="spinner" />Applying changes…</>
-                  ) : '🔄 Apply Changes'}
+                  ) : isRateLimited ? `Wait ${countdown}s` : '🔄 Apply Changes'}
                 </button>
               </form>
               <button

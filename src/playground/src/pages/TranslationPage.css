@@ -171,3 +171,13 @@
   color: #b91c1c;
   font-size: 0.9rem;
 }
+
+.translation-rate-limit {
+  background: #fff3cd;
+  border: 1px solid #ffc107;
+  color: #856404;
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-size: 0.9rem;
+  margin-top: 12px;
+}

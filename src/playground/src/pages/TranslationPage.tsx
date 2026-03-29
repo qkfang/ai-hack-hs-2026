@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { API_BASE } from '../config'
+import { useRateLimit } from '../hooks/useRateLimit'
 import './TranslationPage.css'
 
 interface Language {
@@ -39,6 +40,7 @@ export function TranslationPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [languages, setLanguages] = useState<Language[]>(COMMON_LANGUAGES)
+  const { isRateLimited, countdown, triggerRateLimit } = useRateLimit()
 
   useEffect(() => {
     fetch(`${API_BASE}/api/translate/languages`)
@@ -59,7 +61,7 @@ export function TranslationPage() {
   }, [])
 
   async function translate() {
-    if (!sourceText.trim() || isLoading) return
+    if (!sourceText.trim() || isLoading || isRateLimited) return
     setIsLoading(true)
     setError(null)
     setTranslatedText('')
@@ -71,6 +73,11 @@ export function TranslationPage() {
         body: JSON.stringify({ text: sourceText, targetLanguage: targetLang, sourceLanguage: sourceLang || null }),
       })
       const data = await res.json()
+      if (res.status === 429) {
+        triggerRateLimit(data.retryAfter ?? 15)
+        setError(data.error ?? 'Rate limit reached, please wait.')
+        return
+      }
       if (!res.ok) { setError(data.error ?? 'Translation failed'); return }
       setTranslatedText(data.translatedText ?? '')
       if (data.detectedLanguage) setDetectedLang(data.detectedLanguage)
@@ -110,7 +117,7 @@ export function TranslationPage() {
               <option key={l.code} value={l.code}>{l.name}</option>
             ))}
           </select>
-          <button className="swap-btn" onClick={swapLanguages} title="Swap languages" disabled={isLoading}>⇄</button>
+          <button className="swap-btn" onClick={swapLanguages} title="Swap languages" disabled={isLoading || isRateLimited}>⇄</button>
           <select
             className="lang-select"
             value={targetLang}
@@ -141,8 +148,8 @@ export function TranslationPage() {
             />
             <div className="panel-footer">
               <span className="char-count">{sourceText.length} characters</span>
-              <button className="translate-btn" onClick={translate} disabled={isLoading || !sourceText.trim()}>
-                {isLoading ? 'Translating…' : 'Translate'}
+              <button className="translate-btn" onClick={translate} disabled={isLoading || isRateLimited || !sourceText.trim()}>
+                {isLoading ? 'Translating…' : isRateLimited ? `Wait ${countdown}s` : 'Translate'}
               </button>
             </div>
           </div>
@@ -173,6 +180,9 @@ export function TranslationPage() {
         </div>
 
         {error && <div className="translation-error">⚠ {error}</div>}
+        {isRateLimited && !error && (
+          <div className="translation-rate-limit">⏳ Please wait <strong>{countdown}s</strong> before translating again.</div>
+        )}
       </div>
     </div>
   )

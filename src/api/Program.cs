@@ -12,6 +12,7 @@ builder.Services.AddDbContext<WeatherDbContext>(options =>
 // In-memory user/comic store (singleton so state persists across requests)
 builder.Services.AddSingleton<UserStore>();
 builder.Services.AddSingleton<QuizStore>();
+builder.Services.AddSingleton<AzureKeyPoolService>();
 
 // HttpClient for ChatKit session creation
 builder.Services.AddHttpClient();

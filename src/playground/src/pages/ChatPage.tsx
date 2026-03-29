@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { API_BASE } from '../config'
+import { useRateLimit } from '../hooks/useRateLimit'
 import './ChatPage.css'
 
 const GUIDE_SECTIONS = [
@@ -121,6 +122,7 @@ export function ChatPage() {
   const [guideOpen, setGuideOpen] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const { isRateLimited, countdown, triggerRateLimit } = useRateLimit()
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -163,7 +165,7 @@ export function ChatPage() {
 
   async function sendMessage() {
     const text = input.trim()
-    if (!text || isLoading) return
+    if (!text || isLoading || isRateLimited) return
 
     const userMsg: ChatMessage = { role: 'user', content: text }
     setMessages(prev => [...prev, userMsg])
@@ -218,6 +220,8 @@ export function ChatPage() {
               return copy
             })
           } else if (event.type === 'error') {
+            const retryAfter = (event as Record<string, unknown>).retryAfter
+            if (typeof retryAfter === 'number') triggerRateLimit(retryAfter)
             setMessages(prev => {
               const copy = [...prev]
               const last = copy[copy.length - 1]
@@ -299,10 +303,12 @@ export function ChatPage() {
             value={input}
             onChange={e => setInput(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && !e.shiftKey && sendMessage()}
-            placeholder="Type a message…"
-            disabled={isLoading}
+            placeholder={isRateLimited ? `Rate limited — wait ${countdown}s…` : 'Type a message…'}
+            disabled={isLoading || isRateLimited}
           />
-          <button onClick={sendMessage} disabled={isLoading || isUploading || !input.trim()} aria-label={isUploading ? 'Uploading attachment…' : 'Send message'}>Send</button>
+          <button onClick={sendMessage} disabled={isLoading || isUploading || isRateLimited || !input.trim()} aria-label={isUploading ? 'Uploading attachment…' : isRateLimited ? `Wait ${countdown}s` : 'Send message'}>
+            {isRateLimited ? `${countdown}s` : 'Send'}
+          </button>
         </div>
       </div>
       <div className={`chat-guide-panel${guideOpen ? ' open' : ''}`}>

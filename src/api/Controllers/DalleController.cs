@@ -1,3 +1,4 @@
+using Azure;
 using Azure.AI.OpenAI;
 using Azure.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -8,21 +9,25 @@ namespace api.Controllers;
 
 [ApiController]
 [Route("api/dalle")]
-public class DalleController(UserStore store, IConfiguration config) : ControllerBase
+public class DalleController(UserStore store, IConfiguration config, AzureKeyPoolService keyPool) : ControllerBase
 {
-    private ImageClient CreateImageClient()
+    private ImageClient CreateImageClient(FoundryEntry entry)
     {
-        var endpoint = config["AzureAIFoundry:Endpoint"] ?? "";
         var dalleDeployment = config["AzureAIFoundry:DalleDeployment"] ?? "dall-e-3";
         var openAiKey = config["OpenAI:ApiKey"] ?? "";
 
-        if (!string.IsNullOrEmpty(endpoint))
+        if (!string.IsNullOrEmpty(entry.Url))
         {
-            var tenantId = config["AzureAIFoundry:TenantId"] ?? "";
-            var credential = string.IsNullOrEmpty(tenantId)
-                ? new DefaultAzureCredential()
-                : new DefaultAzureCredential(new DefaultAzureCredentialOptions { TenantId = tenantId });
-            var azureClient = new AzureOpenAIClient(new Uri(endpoint), credential);
+            AzureOpenAIClient azureClient;
+            if (!string.IsNullOrEmpty(entry.Key))
+                azureClient = new AzureOpenAIClient(new Uri(entry.Url), new AzureKeyCredential(entry.Key));
+            else
+            {
+                var credential = string.IsNullOrEmpty(entry.TenantId)
+                    ? new DefaultAzureCredential()
+                    : new DefaultAzureCredential(new DefaultAzureCredentialOptions { TenantId = entry.TenantId });
+                azureClient = new AzureOpenAIClient(new Uri(entry.Url), credential);
+            }
             return azureClient.GetImageClient(dalleDeployment);
         }
         if (!string.IsNullOrEmpty(openAiKey))
@@ -33,6 +38,22 @@ public class DalleController(UserStore store, IConfiguration config) : Controlle
         throw new InvalidOperationException("AzureAIFoundry or OpenAI credentials must be configured in appsettings");
     }
 
+    private static int ParseRetryAfter(HttpResponseMessage response, int defaultSeconds = 60)
+    {
+        if (response.Headers.RetryAfter?.Delta is TimeSpan delta)
+            return Math.Max(1, (int)Math.Ceiling(delta.TotalSeconds));
+        return defaultSeconds;
+    }
+
+    private static int ParseRetryAfter(RequestFailedException ex, int defaultSeconds = 60)
+    {
+        var response = ex.GetRawResponse();
+        if (response is not null && response.Headers.TryGetValue("Retry-After", out var val)
+            && int.TryParse(val, out var secs))
+            return Math.Max(1, secs);
+        return defaultSeconds;
+    }
+
     [HttpPost]
     public async Task<IActionResult> GenerateImage([FromBody] DalleRequest request)
     {
@@ -40,8 +61,15 @@ public class DalleController(UserStore store, IConfiguration config) : Controlle
         if (string.IsNullOrEmpty(description))
             return BadRequest(new { error = "description is required" });
 
+        var entry = keyPool.FoundryPool.GetNext();
+        if (entry is null)
+        {
+            var wait = keyPool.FoundryPool.GetMinRetryAfterSeconds();
+            return StatusCode(429, new { error = "Rate limit reached, please wait.", retryAfter = wait });
+        }
+
         ImageClient imageClient;
-        try { imageClient = CreateImageClient(); }
+        try { imageClient = CreateImageClient(entry); }
         catch (InvalidOperationException ex) { return StatusCode(400, new { error = ex.Message }); }
 
         try
@@ -64,11 +92,18 @@ public class DalleController(UserStore store, IConfiguration config) : Controlle
 
             return Ok(new { imageUrl });
         }
+        catch (RequestFailedException ex) when (ex.Status == 429)
+        {
+            entry.MarkRateLimited(ParseRetryAfter(ex));
+            var wait = keyPool.FoundryPool.GetMinRetryAfterSeconds();
+            return StatusCode(429, new { error = "Rate limit reached, please wait.", retryAfter = wait });
+        }
         catch (Exception ex)
         {
             return StatusCode(500, new { error = ex.Message });
         }
     }
+
     [HttpPost("edit")]
     public async Task<IActionResult> EditImage([FromBody] DalleEditRequest request)
     {
@@ -77,8 +112,15 @@ public class DalleController(UserStore store, IConfiguration config) : Controlle
         if (string.IsNullOrEmpty(prompt) || string.IsNullOrEmpty(sourceUrl))
             return BadRequest(new { error = "imageUrl and prompt are required" });
 
+        var entry = keyPool.FoundryPool.GetNext();
+        if (entry is null)
+        {
+            var wait = keyPool.FoundryPool.GetMinRetryAfterSeconds();
+            return StatusCode(429, new { error = "Rate limit reached, please wait.", retryAfter = wait });
+        }
+
         ImageClient imageClient;
-        try { imageClient = CreateImageClient(); }
+        try { imageClient = CreateImageClient(entry); }
         catch (InvalidOperationException ex) { return StatusCode(400, new { error = ex.Message }); }
 
         try
@@ -110,6 +152,12 @@ public class DalleController(UserStore store, IConfiguration config) : Controlle
 
             return Ok(new { imageUrl });
         }
+        catch (RequestFailedException ex) when (ex.Status == 429)
+        {
+            entry.MarkRateLimited(ParseRetryAfter(ex));
+            var wait = keyPool.FoundryPool.GetMinRetryAfterSeconds();
+            return StatusCode(429, new { error = "Rate limit reached, please wait.", retryAfter = wait });
+        }
         catch (Exception ex)
         {
             return StatusCode(500, new { error = ex.Message });
@@ -119,3 +167,4 @@ public class DalleController(UserStore store, IConfiguration config) : Controlle
 
 public record DalleRequest(string? Description, int? UserId);
 public record DalleEditRequest(string? ImageUrl, string? Prompt);
+
