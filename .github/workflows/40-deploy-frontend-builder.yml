@@ -25,9 +25,11 @@ jobs:
 
       - name: Create .env file
         working-directory: src/webbuilder
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
         run: |
-          cp .env.sample .env
-          sed -i 's|^GH_TOKEN=.*|GH_TOKEN=${{ secrets.GH_TOKEN }}|' .env
+          grep -v '^GH_TOKEN=' .env.sample > .env
+          printf 'GH_TOKEN=%s\n' "$GH_TOKEN" >> .env
 
       - name: Build
         working-directory: src/webbuilder
