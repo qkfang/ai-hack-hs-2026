@@ -1,5 +1,6 @@
 import { promises as fs } from "fs";
 import path from "path";
+import { randomUUID } from "crypto";
 import { BlobServiceClient, ContainerClient } from "@azure/storage-blob";
 import { DefaultAzureCredential } from "@azure/identity";
 
@@ -80,7 +81,7 @@ export class FileSystemStorageProvider implements StorageProvider {
   async createUser(name: string, userId?: string): Promise<UserData> {
     const users = (await this.readJsonFile<UserData[]>(this.usersFile)) || [];
     const newUser: UserData = {
-      id: userId!,
+      id: userId || randomUUID(),
       name,
       createdAt: new Date().toISOString(),
     };

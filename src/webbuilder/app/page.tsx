@@ -161,7 +161,7 @@ function HomeContent() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 dark:bg-gray-900">
+    <div className="min-h-screen bg-gray-100 dark:bg-gray-900 overflow-x-hidden">
       <Header
         sampleName={sampleName}
         version={version}

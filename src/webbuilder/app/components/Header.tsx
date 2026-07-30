@@ -55,11 +55,11 @@ export default function Header({
 
   return (
     <>
-      <header className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
-        <div className="max-w-6xl mx-auto px-4 py-1.5">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="relative" ref={menuRef}>
+      <header className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 overflow-hidden">
+        <div className="max-w-6xl mx-auto px-2 sm:px-4 py-1.5">
+          <div className="flex items-center justify-between gap-1">
+            <div className="flex items-center gap-1 sm:gap-2 min-w-0">
+              <div className="relative shrink-0" ref={menuRef}>
                 <button
                   onClick={() => setMenuOpen(!menuOpen)}
                   className="p-1.5 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md transition-colors"
@@ -115,14 +115,14 @@ export default function Header({
                 Web Builder
               </h1>
               {sampleName && (
-                <span className="px-1.5 py-0.5 text-[10px] font-medium bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300 rounded-full">
+                <span className="hidden sm:inline px-1.5 py-0.5 text-[10px] font-medium bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300 rounded-full">
                   {sampleName}
                 </span>
               )}
-              <span className="text-[10px] text-gray-400 dark:text-gray-500">v{version}</span>
+              <span className="hidden sm:inline text-[10px] text-gray-400 dark:text-gray-500">v{version}</span>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1 sm:gap-2 shrink-0">
               {/* <Link
                 href="/gallery"
                 className="px-2 py-1 text-xs text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/30 rounded transition-colors"
@@ -131,12 +131,12 @@ export default function Header({
               </Link> */}
               <button
                 onClick={() => setIsFullScreen(true)}
-                className="px-2 py-1 text-xs text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
+                className="hidden sm:inline-flex px-2 py-1 text-xs text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
                 title="Full screen"
               >
                 ⛶
               </button>
-              <div className="w-px h-4 bg-gray-300 dark:bg-gray-600" />
+              <div className="hidden sm:block w-px h-4 bg-gray-300 dark:bg-gray-600" />
               {onSave && (
                 <button
                   onClick={onSave}
@@ -154,7 +154,7 @@ export default function Header({
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
                     </svg>
                   )}
-                  {isSaving ? "Saving..." : "Save"}
+                  {isSaving ? "Saving..." : <><span className="hidden sm:inline">Save</span><span className="sm:hidden">💾</span></>}
                 </button>
               )}
               <button
@@ -166,9 +166,9 @@ export default function Header({
                 }`}
               >
                 <CopilotIcon className="w-3.5 h-3.5" />
-                {isChatOpen ? "Close Chat" : "Copilot"}
+                <span className="hidden sm:inline">{isChatOpen ? "Close Chat" : "Copilot"}</span>
               </button>
-              <div className="w-px h-4 bg-gray-300 dark:bg-gray-600" />
+              <div className="hidden sm:block w-px h-4 bg-gray-300 dark:bg-gray-600" />
               <UserProfile />
             </div>
           </div>

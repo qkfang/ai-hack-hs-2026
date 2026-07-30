@@ -298,7 +298,7 @@ export default function ChatFlyout({ isOpen, onClose }: ChatFlyoutProps) {
       ref={flyoutRef}
       style={{ width: Math.min(flyoutWidth, typeof window !== "undefined" ? window.innerWidth : flyoutWidth) }}
       className={`fixed right-0 top-[80px] z-50 flex h-[calc(100vh-77px)] max-w-[100vw] flex-col bg-slate-800 border-l border-t border-slate-600/50 shadow-xl transition-transform duration-300 ${
-        isOpen ? "translate-x-0" : "translate-x-full"
+        isOpen ? "translate-x-0" : "translate-x-full invisible"
       }`}
     >
       <div

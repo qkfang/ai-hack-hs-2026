@@ -156,12 +156,12 @@ export default function UserProfile() {
     <div className="relative" ref={dropdownRef}>
       <button
         onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-        className="flex items-center gap-2 px-3 py-1.5 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-colors"
+        className="flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-1.5 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-colors"
       >
-        <div className="w-7 h-7 rounded-full bg-blue-500 flex items-center justify-center text-white text-sm font-medium">
+        <div className="w-7 h-7 rounded-full bg-blue-500 flex items-center justify-center text-white text-sm font-medium shrink-0">
           {user?.name?.charAt(0).toUpperCase() || "?"}
         </div>
-        <span className="text-sm font-medium text-gray-700 dark:text-gray-200">
+        <span className="hidden sm:inline text-sm font-medium text-gray-700 dark:text-gray-200">
           {user?.name || "Guest"}
         </span>
         {isAdminMode && (
@@ -170,7 +170,7 @@ export default function UserProfile() {
           </span>
         )}
         <svg
-          className={`w-4 h-4 text-gray-500 transition-transform ${isDropdownOpen ? "rotate-180" : ""}`}
+          className={`hidden sm:block w-4 h-4 text-gray-500 transition-transform ${isDropdownOpen ? "rotate-180" : ""}`}
           fill="none"
           viewBox="0 0 24 24"
           stroke="currentColor"
